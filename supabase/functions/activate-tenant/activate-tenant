@@ -1,0 +1,53 @@
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+serve(async (req) => {
+  const { token, password } = await req.json()
+
+  const supabaseAdmin = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+
+  // 1. 招待取得
+  const { data: invite } = await supabaseAdmin
+    .from('tenant_invites')
+    .select('*')
+    .eq('token', token)
+    .is('used_at', null)
+    .single()
+
+  if (!invite) {
+    return new Response('Invalid invite', { status: 400 })
+  }
+
+  // 2. Auth user 作成
+  const { data: user, error: userError } =
+    await supabaseAdmin.auth.admin.createUser({
+      email: invite.email,
+      password,
+      email_confirm: true,
+    })
+
+  if (userError) {
+    return new Response(userError.message, { status: 400 })
+  }
+
+  // 3. profiles を tenant に更新
+  await supabaseAdmin
+    .from('profiles')
+    .update({
+      role: 'tenant',
+    })
+    .eq('user_id', user.user.id)
+
+  // 4. 招待を使用済みに
+  await supabaseAdmin
+    .from('tenant_invites')
+    .update({ used_at: new Date().toISOString() })
+    .eq('token', token)
+
+  return new Response(JSON.stringify({ ok: true }), {
+    headers: { 'Content-Type': 'application/json' },
+  })
+})
