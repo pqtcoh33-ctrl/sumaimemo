@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
     // 物件一覧取得
     // =========================
     const { data: properties, error: propError } = await admin
-      .from<Property>('properties')
+      .from('properties')
       .select('id, name')
       .eq('management_company_id', management_company_id)
       .order('name', { ascending: true })
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
     // 問い合わせ一覧取得（tenant JOIN）
     // =========================
     let query = admin
-      .from<InquiryRow>('inquiries')
+      .from('inquiries')
       .select(`
         id,
         tenant_id,

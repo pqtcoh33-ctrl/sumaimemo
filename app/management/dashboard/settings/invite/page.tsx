@@ -12,7 +12,7 @@ export default async function InvitePage() {
     redirect('/dashboard')
   }
 
-  const properties = await getManagementProperties(profile.management_company_id)
+  const properties = await getManagementProperties()
   const defaultProperty = properties[0]?.id ?? ''
   const initialToken = null
 
