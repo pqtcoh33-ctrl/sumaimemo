@@ -1,9 +1,11 @@
-//app/api/management/inquiries/status/route.ts
+// app/api/management/inquiries/status/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseClient } from '@/lib/supabase/client'
+import { createSupabaseServer } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createSupabaseServer()
+
     const { inquiry_id, status } = await req.json()
 
     if (!inquiry_id || !status) {
@@ -13,7 +15,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { error } = await supabaseClient
+    const { error } = await supabase
       .from('inquiries')
       .update({ status })
       .eq('id', inquiry_id)
