@@ -165,22 +165,18 @@ export async function deleteManagementCompany(companyId: string) {
 
   /* =========================
      9. 管理会社ユーザー auth + profiles 削除
-     （companyId が null のケースも含む）
+     （companyId に紐づくユーザーのみ確実に削除）
   ========================= */
   const { data: managementUsers } = await supabase
     .from('profiles')
     .select('user_id')
     .eq('role', 'management')
-    .or(
-      `management_company_id.eq.${companyId},management_company_id.is.null`
-    )
+    .eq('management_company_id', companyId)
 
   if (managementUsers) {
     for (const u of managementUsers) {
       const { error } = await supabase.auth.admin.deleteUser(u.user_id)
-      if (error) {
-        console.error('management auth delete error:', u.user_id, error)
-      }
+      if (error) console.error('management auth delete error:', u.user_id, error)
       await supabase.from('profiles').delete().eq('user_id', u.user_id)
     }
   }

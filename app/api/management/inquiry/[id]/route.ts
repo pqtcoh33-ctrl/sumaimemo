@@ -6,6 +6,12 @@ import { createClient } from '@supabase/supabase-js'
 const ALLOWED_STATUS = ['未対応', '保留', '対応済み'] as const
 type InquiryStatus = (typeof ALLOWED_STATUS)[number]
 
+// 🔴 追加：UUIDバリデーション（最小）
+const isValidUUID = (value: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  )
+
 const adminClient = () =>
   createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,12 +20,20 @@ const adminClient = () =>
 
 /* =========================
    GET: 問い合わせ詳細取得
-   ========================= */
+========================= */
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // 🔴 追加：UUIDガード（ここだけ）
+    if (!isValidUUID(params.id)) {
+      return NextResponse.json(
+        { message: 'invalid id' },
+        { status: 400 }
+      )
+    }
+
     const admin = adminClient()
 
     const { data, error } = await admin
@@ -63,12 +77,20 @@ export async function GET(
 
 /* =========================
    PATCH: ステータス更新
-   ========================= */
+========================= */
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // 🔴 追加：UUIDガード（GETと同じ）
+    if (!isValidUUID(params.id)) {
+      return NextResponse.json(
+        { success: false, message: 'invalid id' },
+        { status: 400 }
+      )
+    }
+
     const inquiryId = params.id
     const { status } = await req.json()
 

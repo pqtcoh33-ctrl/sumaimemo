@@ -44,9 +44,17 @@ export default function NoticesClient({
             </Link>
 
             {n.isUnread && (
-              <span className="rounded bg-red-500 px-2 py-0.5 text-xs text-white">
-                未読
-              </span>
+              <span
+    style={{
+      backgroundColor: 'red',
+      color: 'white',
+      padding: '2px 6px',
+      borderRadius: '4px',
+      fontSize: '12px',
+    }}
+  >
+    未読
+  </span>
             )}
           </div>
 

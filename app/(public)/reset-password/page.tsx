@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -22,13 +24,13 @@ export default function ResetPasswordPage() {
   )
 
   useEffect(() => {
-  if (!accessToken || !refreshToken) return
+    if (!accessToken || !refreshToken) return
 
-  supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  })
-}, [accessToken, refreshToken])
+    supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    })
+  }, [accessToken, refreshToken])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
