@@ -1,10 +1,10 @@
 // app/management/dashboard/settings/tenants/page.tsx
-export const dynamic = 'force-dynamic'
 import { getProfile } from '@/lib/auth/getProfile'
 import { redirect } from 'next/navigation'
 import { getProperties } from './actions'
 import TenantsClient from './TenantsClient'
 
+export const dynamic = 'force-dynamic'
 export default async function TenantsPage() {
   try {
     const { profile } = await getProfile()
