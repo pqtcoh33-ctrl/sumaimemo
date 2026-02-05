@@ -1,4 +1,5 @@
 // app/management/dashboard/settings/tenants/page.tsx
+export const dynamic = 'force-dynamic'
 import { getProfile } from '@/lib/auth/getProfile'
 import { redirect } from 'next/navigation'
 import { getProperties } from './actions'
