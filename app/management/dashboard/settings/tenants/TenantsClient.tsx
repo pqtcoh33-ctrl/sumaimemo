@@ -15,16 +15,41 @@ export type Tenant = {
 }
 
 type Props = {
-  properties: Property[]
+  managementCompanyId: string
 }
 
-export default function TenantsClient({ properties }: Props) {
-  const [selectedPropertyId, setSelectedPropertyId] = useState(
-    properties[0]?.id ?? ''
-  )
+export default function TenantsClient({ managementCompanyId }: Props) {
+  const [properties, setProperties] = useState<Property[]>([])
+  const [selectedPropertyId, setSelectedPropertyId] = useState('')
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [loading, setLoading] = useState(false)
 
+  // ========================
+  // 物件一覧を取得
+  // ========================
+  useEffect(() => {
+    if (!managementCompanyId) return
+
+    const fetchProperties = async () => {
+      try {
+        const res = await fetch(
+          `/api/management/properties?management_company_id=${managementCompanyId}`
+        )
+        if (!res.ok) throw new Error()
+        const data = await res.json()
+        setProperties(data)
+        if (data.length > 0) setSelectedPropertyId(data[0].id)
+      } catch {
+        toast.error('物件の取得に失敗しました')
+      }
+    }
+
+    fetchProperties()
+  }, [managementCompanyId])
+
+  // ========================
+  // 入居者一覧を取得
+  // ========================
   useEffect(() => {
     if (!selectedPropertyId) return
 
@@ -40,6 +65,9 @@ export default function TenantsClient({ properties }: Props) {
       .finally(() => setLoading(false))
   }, [selectedPropertyId])
 
+  // ========================
+  // 入居者削除
+  // ========================
   async function handleDelete(userId: string) {
     if (!confirm('この入居者を削除しますか？')) return
 
@@ -59,9 +87,7 @@ export default function TenantsClient({ properties }: Props) {
     }
   }
 
-  if (properties.length === 0) {
-    return <p>管理中の物件がありません</p>
-  }
+  if (properties.length === 0) return <p>管理中の物件がありません</p>
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: 24 }}>
