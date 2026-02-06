@@ -1,18 +1,40 @@
+// app/api/management/tenants/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// 🔑 inquiry と同じ思想：実行時にだけ client を作る
-const adminClient = () =>
-  createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+// 🔴 これが最後の一手
+export const runtime = 'nodejs'
+
+// 実行時にだけ admin client を作る
+const adminClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('Supabase admin env missing')
+    return null
+  }
+
+  return createClient(
+    supabaseUrl,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
   )
+}
 
 // =========================
 // 入居者一覧取得
 // =========================
 export async function GET(req: NextRequest) {
   const admin = adminClient()
+  if (!admin) {
+    return NextResponse.json([], { status: 500 })
+  }
 
   const { searchParams } = new URL(req.url)
   const propertyId = searchParams.get('property_id')
@@ -41,6 +63,9 @@ export async function GET(req: NextRequest) {
 // =========================
 export async function DELETE(req: NextRequest) {
   const admin = adminClient()
+  if (!admin) {
+    return NextResponse.json({ success: false }, { status: 500 })
+  }
 
   const { user_id } = await req.json()
 
