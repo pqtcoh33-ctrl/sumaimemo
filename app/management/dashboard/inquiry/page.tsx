@@ -1,6 +1,7 @@
 // app/management/dashboard/inquiry/page.tsx
 import { getInquiryList } from '@/lib/management/getInquiryList'
 import InquiryClient from './InquiryClient'
+export const dynamic = 'force-dynamic'
 
 type Props = {
   searchParams?: {

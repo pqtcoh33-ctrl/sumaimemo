@@ -1,5 +1,6 @@
 import DocumentsClient from './DocumentsClient'
 import { getDocumentsStats } from '@/lib/management/getDocumentsStats'
+export const dynamic = 'force-dynamic'
 
 type Props = {
   searchParams: { property?: string }

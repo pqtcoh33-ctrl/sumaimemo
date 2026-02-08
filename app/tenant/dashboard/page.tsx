@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { getProfile } from '@/lib/auth/getProfile'
+export const dynamic = 'force-dynamic'
 
 /* =========================
    型定義

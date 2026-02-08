@@ -1,5 +1,6 @@
 import { getNoticeStats } from '@/lib/management/getNoticeStats'
 import NoticesClient from './NoticesClient'
+export const dynamic = 'force-dynamic'
 
 type Props = {
   searchParams: {

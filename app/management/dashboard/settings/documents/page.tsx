@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createSupabaseAdmin } from '@/lib/supabase/server'
 import DocumentUploadForm from './DocumentUploadForm'
 import DashboardBackLink from '@/components/management/DashboardBackLink'
+export const dynamic = 'force-dynamic'
 
 type Property = {
   id: string
