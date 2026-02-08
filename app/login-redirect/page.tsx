@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getProfile } from '@/lib/auth/getProfile'
+export const dynamic = 'force-dynamic'
 
 export default async function LoginRedirectPage() {
   const { user, profile } = await getProfile()
