@@ -21,5 +21,11 @@ export default async function NoticesPage({ searchParams }: Props) {
   // ★ ダッシュボードと同じ
   const rows = await getNoticeStats([propertyId])
 
-  return <NoticesClient notices={rows} />
+  return (
+  <NoticesClient
+    notices={rows}
+    propertyId={propertyId}
+  />
+)
+
 }

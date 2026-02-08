@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { getProfile } from '@/lib/auth/getProfile'
 import NoticesClient from './NoticesClient'
+export const dynamic = 'force-dynamic'
 
 type Notice = {
   id: string

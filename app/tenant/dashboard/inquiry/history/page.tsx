@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { getProfile } from '@/lib/auth/getProfile'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 type Inquiry = {
   id: string
   category: string

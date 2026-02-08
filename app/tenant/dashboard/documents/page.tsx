@@ -1,4 +1,5 @@
 import DocumentList from './DocumentList'
+export const dynamic = 'force-dynamic'
 
 export default function TenantDocumentsPage() {
   return (

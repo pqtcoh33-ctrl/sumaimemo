@@ -4,6 +4,7 @@ import { getProfile } from '@/lib/auth/getProfile'
 import { getManagementProperties } from '@/lib/management/getManagementProperties'
 import NoticeCreateForm from '@/components/dashboard/NoticeCreateForm'
 import DashboardBackLink from '@/components/management/DashboardBackLink'
+export const dynamic = 'force-dynamic'
 
 export default async function CreateNoticePage() {
   /* =========================

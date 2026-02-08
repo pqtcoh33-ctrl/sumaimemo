@@ -1,4 +1,5 @@
 'use client'
+
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import DashboardBackLink from '@/components/management/DashboardBackLink'
@@ -13,6 +14,7 @@ type NoticeStat = {
 
 type Props = {
   notices: NoticeStat[]
+  propertyId: string
 }
 
 function shorten(text: string, max = 32) {
@@ -20,7 +22,10 @@ function shorten(text: string, max = 32) {
   return text.length > max ? text.slice(0, max) + '…' : text
 }
 
-export default function NoticesClient({ notices }: Props) {
+export default function NoticesClient({
+  notices,
+  propertyId,
+}: Props) {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -41,6 +46,7 @@ export default function NoticesClient({ notices }: Props) {
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: 16 }}>
       <DashboardBackLink />
+
       <h1 style={{ marginBottom: 12, fontSize: 16, fontWeight: 700 }}>
         お知らせ一覧
       </h1>
@@ -89,7 +95,7 @@ export default function NoticesClient({ notices }: Props) {
 
                 <td align="center">
                   <Link
-                    href={`/management/dashboard/notices/${n.id}`}
+                    href={`/management/dashboard/notices/${n.id}?property=${propertyId}`}
                     style={{ color: '#2563eb' }}
                   >
                     編集
@@ -141,7 +147,7 @@ export default function NoticesClient({ notices }: Props) {
                 </span>
 
                 <Link
-                  href={`/management/dashboard/notices/${n.id}`}
+                  href={`/management/dashboard/notices/${n.id}?property=${propertyId}`}
                   style={{ color: '#2563eb' }}
                 >
                   編集

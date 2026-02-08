@@ -5,6 +5,8 @@ import { getManagementProperties } from '@/lib/management/getManagementPropertie
 import InviteCreateForm from './InviteCreateForm'
 import DashboardBackLink from '@/components/management/DashboardBackLink'
 
+export const dynamic = 'force-dynamic'
+
 export default async function InvitePage() {
   const { profile, user } = await getProfile()
 

@@ -23,6 +23,9 @@ export default function InquiryClient({ inquiries }: Props) {
   const searchParams = useSearchParams()
   const [isMobile, setIsMobile] = useState(false)
 
+  // ★ 物件IDを現在のURLから取得
+  const propertyId = searchParams.get('property') ?? ''
+
   const currentStatus = searchParams.get('status') ?? ''
   const currentDate = searchParams.get('date') ?? ''
 
@@ -104,7 +107,9 @@ export default function InquiryClient({ inquiries }: Props) {
                   {new Date(r.created_at).toLocaleDateString()}
                 </td>
                 <td align="center">
-                  <Link href={`/management/dashboard/inquiry/${r.id}`}>
+                  <Link
+                    href={`/management/dashboard/inquiry/${r.id}?property=${propertyId}`}
+                  >
                     編集
                   </Link>
                 </td>
@@ -147,7 +152,9 @@ export default function InquiryClient({ inquiries }: Props) {
                 }}
               >
                 <span>状態：{r.status}</span>
-                <Link href={`/management/dashboard/inquiry/${r.id}`}>
+                <Link
+                  href={`/management/dashboard/inquiry/${r.id}?property=${propertyId}`}
+                >
                   編集
                 </Link>
               </div>

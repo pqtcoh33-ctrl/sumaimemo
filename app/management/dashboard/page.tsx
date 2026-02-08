@@ -1,4 +1,5 @@
 //app/management/dashboard/page.tsx
+
 import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { getProfile } from '@/lib/auth/getProfile'
@@ -12,6 +13,8 @@ import DashboardNoticeSection from '@/components/dashboard/sections/DashboardNot
 import DashboardDocumentSection from '@/components/dashboard/sections/DashboardDocumentSection'
 
 import Card from '@/components/common/Card'
+
+export const dynamic = 'force-dynamic'
 
 export default async function ManagementDashboardPage({
   searchParams,
@@ -38,7 +41,7 @@ export default async function ManagementDashboardPage({
 
   // ✅ ★ここが追加ポイント
   if (!searchParams.property && propertyList.length > 0) {
-    redirect(`?property=${propertyList[0].id}`)
+  redirect(`/management/dashboard?property=${propertyList[0].id}`)
   }
 
   const selectedPropertyId = searchParams.property ?? null

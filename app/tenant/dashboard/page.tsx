@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { getProfile } from '@/lib/auth/getProfile'
 
@@ -9,6 +10,9 @@ type Notice = {
   id: string
   title: string
   created_at: string
+  tenant_notice_reads?: {
+    read_at: string
+  }[] | null
 }
 
 type TenantProfileRow = {
@@ -39,20 +43,21 @@ export default async function TenantDashboardPage() {
   )
 
   /* =========================
-     ① 現在の所属情報（profiles）
+     ① 現在の所属情報
      ========================= */
-  const { data: tenantProfile, error: profileError } = await admin
-    .from('profiles')
-    .select(`
-      property_id,
-      unit_label,
-      properties (
-        name
-      )
-    `)
-    .eq('user_id', user.id)
-    .eq('role', 'tenant')
-    .maybeSingle<TenantProfileRow>()
+  const { data: tenantProfile, error: profileError } =
+    await admin
+      .from('profiles')
+      .select(`
+        property_id,
+        unit_label,
+        properties (
+          name
+        )
+      `)
+      .eq('user_id', user.id)
+      .eq('role', 'tenant')
+      .maybeSingle<TenantProfileRow>()
 
   if (
     profileError ||
@@ -68,12 +73,13 @@ export default async function TenantDashboardPage() {
   }
 
   /* =========================
-     物件名の安全な取得
+     物件名
      ========================= */
   let propertyName = '不明'
 
   if (Array.isArray(tenantProfile.properties)) {
-    propertyName = tenantProfile.properties[0]?.name ?? '不明'
+    propertyName =
+      tenantProfile.properties[0]?.name ?? '不明'
   } else if (
     tenantProfile.properties &&
     'name' in tenantProfile.properties
@@ -82,20 +88,28 @@ export default async function TenantDashboardPage() {
   }
 
   /* =========================
-     ② お知らせ（最新3件）
+     ② お知らせ（最新3件 + 既読判定）
      ========================= */
   const { data: noticeData } = await admin
     .from('notices')
-    .select('id, title, created_at')
+    .select(`
+      id,
+      title,
+      created_at,
+      tenant_notice_reads (
+        read_at
+      )
+    `)
     .eq('property_id', tenantProfile.property_id)
     .eq('is_published', true)
+    .eq('tenant_notice_reads.tenant_user_id',user.id)
     .order('created_at', { ascending: false })
     .limit(3)
 
   const notices: Notice[] = noticeData ?? []
 
   /* =========================
-     お知らせ総件数（hiddenCount 用）
+     お知らせ総件数
      ========================= */
   const { count: noticeCount } = await admin
     .from('notices')
@@ -120,7 +134,7 @@ export default async function TenantDashboardPage() {
   const hasOpenInquiry = (count ?? 0) > 0
 
   /* =========================
-     表示（モバイル前提）
+     表示
      ========================= */
   return (
     <div
@@ -135,15 +149,15 @@ export default async function TenantDashboardPage() {
     >
       <header>
         <h1
-    style={{
-      fontSize: 24,
-      fontWeight: 600,
-      margin: 0,
-      color: '#3176d1',
-    }}
-  >
-    入居者ダッシュボード
-  </h1>
+          style={{
+            fontSize: 24,
+            fontWeight: 600,
+            margin: 0,
+            color: '#3176d1',
+          }}
+        >
+          入居者ダッシュボード
+        </h1>
 
         <p style={{ color: '#666', fontSize: 14 }}>
           物件：{propertyName}
@@ -155,7 +169,13 @@ export default async function TenantDashboardPage() {
 
       {/* お知らせ */}
       <section>
-        <h2 style={{ marginBottom: 8,fontWeight: 500,fontSize: 22, }}>
+        <h2
+          style={{
+            marginBottom: 8,
+            fontWeight: 500,
+            fontSize: 22,
+          }}
+        >
           最新のお知らせ
         </h2>
 
@@ -169,31 +189,68 @@ export default async function TenantDashboardPage() {
               gap: 8,
             }}
           >
-            {notices.map((n) => (
-              <div
-                key={n.id}
-                style={{
-                  border: '1px solid #e5e5e5',
-                  borderRadius: 8,
-                  padding: 12,
-                  background: '#fff',
-                }}
-              >
-                <div style={{ fontWeight: 600 }}>
-                  {n.title}
-                </div>
-                <div
-                  style={{
-                    color: '#999',
-                    fontSize: 12,
-                  }}
-                >
-                  {new Date(
-                    n.created_at
-                  ).toLocaleDateString()}
-                </div>
-              </div>
-            ))}
+           {notices.map((n) => {
+  const isRead =
+    n.tenant_notice_reads &&
+    n.tenant_notice_reads.length > 0
+
+  return (
+    <div
+      key={n.id}
+      style={{
+        border: '1px solid #e5e5e5',
+        borderRadius: 8,
+        padding: 12,
+        background: '#fff',
+      }}
+    >
+      <Link
+        href={`/tenant/dashboard/notices/${n.id}`}
+        style={{
+          textDecoration: 'none',
+          color: '#000',
+          display: 'block',
+        }}
+      >
+        <div
+          style={{
+            fontWeight: isRead ? 500 : 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          {!isRead && (
+            <span
+              style={{
+                color: '#d32f2f',
+                fontSize: 12,
+                fontWeight: 600,
+                border: '1px solid #d32f2f',
+                borderRadius: 4,
+                padding: '2px 6px',
+              }}
+            >
+              未読
+            </span>
+          )}
+          <span>{n.title}</span>
+        </div>
+
+        <div
+          style={{
+            color: '#999',
+            fontSize: 12,
+            marginTop: 4,
+          }}
+        >
+          {new Date(n.created_at).toLocaleDateString()}
+        </div>
+      </Link>
+    </div>
+  )
+})}
+
 
             {hiddenCount > 0 && (
               <div
@@ -211,7 +268,13 @@ export default async function TenantDashboardPage() {
 
       {/* メニュー */}
       <section>
-        <h2 style={{marginBottom: 8,fontWeight: 500,fontSize: 22, }}>
+        <h2
+          style={{
+            marginBottom: 8,
+            fontWeight: 500,
+            fontSize: 22,
+          }}
+        >
           メニュー
         </h2>
         <ul

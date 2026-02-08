@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 type InquiryStatus = '未対応' | '保留' | '対応済み'
 
 type InquiryRow = {

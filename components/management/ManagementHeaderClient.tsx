@@ -74,7 +74,7 @@ export default function ManagementHeaderClient({
             <button>設定</button>
           </Link>
           <form action={logout}>
-            <button type="submit">ログアウト</button>
+            <button type="submit">ﾛｸﾞｱｳﾄ</button>
           </form>
         </div>
       )}
@@ -122,7 +122,7 @@ export default function ManagementHeaderClient({
                     textAlign: 'left',
                   }}
                 >
-                  ログアウト
+                  ﾛｸﾞｱｳﾄ
                 </button>
               </form>
             </div>

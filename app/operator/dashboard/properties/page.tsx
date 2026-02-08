@@ -1,6 +1,7 @@
 import { getProperties } from './actions'
 import PropertiesClient from './PropertiesClient'
 import { createSupabaseAdmin } from '@/lib/supabase/server'
+export const dynamic = 'force-dynamic'
 
 export default async function PropertiesPage() {
   const properties = await getProperties()

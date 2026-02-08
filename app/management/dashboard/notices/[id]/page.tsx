@@ -5,9 +5,13 @@ import NoticeEditClient from './NoticeEditClient'
 
 type Props = {
   params: { id: string }
+  searchParams: { property?: string }
 }
 
-export default async function NoticeEditPage({ params }: Props) {
+export default async function NoticeEditPage({
+  params,
+  searchParams,
+}: Props) {
   const { profile } = await getProfile()
   if (!profile || profile.role !== 'management') {
     redirect('/login')
@@ -22,7 +26,6 @@ export default async function NoticeEditPage({ params }: Props) {
     .eq('management_company_id', profile.management_company_id)
     .single()
 
-  // 🔹 削除直後の再評価でここに来ないようにする
   if (!notice) {
     redirect('/management/dashboard/notices')
   }
@@ -32,6 +35,8 @@ export default async function NoticeEditPage({ params }: Props) {
       noticeId={notice.id}
       initialTitle={notice.title}
       initialBody={notice.body}
+      /** ★ 追加：そのまま渡すだけ */
+      propertyId={searchParams.property ?? null}
     />
   )
 }
