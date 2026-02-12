@@ -1,4 +1,3 @@
-// app/management/dashboard/settings/tenants/TenantsClient.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -13,6 +12,7 @@ export type Property = {
 export type Tenant = {
   user_id: string
   unit_label: string | null
+  email: string | null
 }
 
 type Props = {
@@ -92,30 +92,74 @@ export default function TenantsClient({ properties }: Props) {
       )}
 
       {!loading && tenants.length > 0 && (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#f5f5f5' }}>
-              <th style={thStyle}>部屋番号</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>操作</th>
-            </tr>
-          </thead>
-          <tbody>
+        <>
+          {/* PC用テーブル */}
+          <div className="desktop-table">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#f5f5f5' }}>
+                  <th style={thStyle}>部屋番号</th>
+                  <th style={thStyle}>メールアドレス</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tenants.map(t => (
+                  <tr key={t.user_id}>
+                    <td style={tdStyle}>{t.unit_label ?? '未設定'}</td>
+                    <td style={tdStyle}>{t.email ?? '-'}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right' }}>
+                      <button
+                        onClick={() => handleDelete(t.user_id)}
+                        style={deleteBtnStyle}
+                      >
+                        退去（削除）
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* スマホ用カード */}
+          <div className="mobile-cards">
             {tenants.map(t => (
-              <tr key={t.user_id}>
-                <td style={tdStyle}>{t.unit_label ?? '未設定'}</td>
-                <td style={{ ...tdStyle, textAlign: 'right' }}>
-                  <button
-                    onClick={() => handleDelete(t.user_id)}
-                    style={deleteBtnStyle}
-                  >
-                    退去（削除）
-                  </button>
-                </td>
-              </tr>
+              <div key={t.user_id} style={cardStyle}>
+                <div style={{ marginBottom: 8 }}>
+                  <strong>部屋番号:</strong> {t.unit_label ?? '未設定'}
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <strong>メール:</strong><br />
+                  {t.email ?? '-'}
+                </div>
+                <button
+                  onClick={() => handleDelete(t.user_id)}
+                  style={deleteBtnStyle}
+                >
+                  退去（削除）
+                </button>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </>
       )}
+
+      <style jsx>{`
+        .mobile-cards {
+          display: none;
+        }
+
+        @media (max-width: 768px) {
+          .desktop-table {
+            display: none;
+          }
+
+          .mobile-cards {
+            display: block;
+          }
+        }
+      `}</style>
     </div>
   )
 }
@@ -132,10 +176,18 @@ const tdStyle: React.CSSProperties = {
 }
 
 const deleteBtnStyle: React.CSSProperties = {
-  padding: '4px 8px',
+  padding: '6px 12px',
   color: '#c00',
   background: 'transparent',
   border: '1px solid #c00',
   borderRadius: 4,
   cursor: 'pointer',
+}
+
+const cardStyle: React.CSSProperties = {
+  border: '1px solid #ddd',
+  borderRadius: 8,
+  padding: 16,
+  marginBottom: 12,
+  background: '#fff',
 }

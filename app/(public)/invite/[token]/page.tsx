@@ -104,6 +104,7 @@ export default async function InviteTokenPage({ params }: Props) {
         property_id: invite.property_id,
         unit_label: invite.unit_label,
         management_company_id: property.management_company_id,
+        email, // ← ここで email を確定
       })
 
     if (profileError) {

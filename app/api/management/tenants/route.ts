@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await admin
     .from('profiles')
-    .select('user_id, unit_label, property_id')
+    .select('user_id, unit_label, property_id, email') // ← ここだけ追加
     .eq('role', 'tenant')
     .eq('property_id', propertyId)
     .order('unit_label')

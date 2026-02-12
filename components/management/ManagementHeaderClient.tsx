@@ -31,13 +31,14 @@ export default function ManagementHeaderClient({
         position: 'relative',
       }}
     >
-      {/* 左側：ロゴ＋会社名（最優先） */}
+      {/* 左側：flexで残り幅を使う */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 12,
-          minWidth: 0, // ★ 省略を効かせるため必須
+          flex: 1,          // ★ 重要
+          minWidth: 0,      // ★ 省略を効かせるため必須
         }}
       >
         <Link href="/management/dashboard">
@@ -47,48 +48,50 @@ export default function ManagementHeaderClient({
             style={{
               height: 32,
               width: 'auto',
-              display: 'block',
+              flexShrink: 0,
             }}
           />
         </Link>
 
         <span
-          title={companyName} // ← 長押し・hoverで全文確認
+          title={companyName}
           style={{
             fontSize: 14,
             fontWeight: 600,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            maxWidth: isMobile ? 180 : 320, // ★ スマホとPCで制御
+            flex: 1,          // ★ 残り幅のみ使う
+            minWidth: 0,
           }}
         >
           {companyName}
         </span>
       </div>
 
-      {/* 右側：PC用ボタン */}
+      {/* PC用 */}
       {!isMobile && (
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <Link href="/management/dashboard/settings">
             <button>設定</button>
           </Link>
           <form action={logout}>
-            <button type="submit">ﾛｸﾞｱｳﾄ</button>
+            <button type="submit">ログアウト</button>
           </form>
         </div>
       )}
 
-      {/* スマホ：三メニュー */}
+      {/* スマホ */}
       {isMobile && (
         <>
           <button
             onClick={() => setOpen((v) => !v)}
             style={{
-              fontSize: 20,
+              fontSize: 22,
               background: 'none',
               border: 'none',
               padding: 4,
+              flexShrink: 0, // ★ 押し出されない
             }}
           >
             ☰
@@ -106,11 +109,13 @@ export default function ManagementHeaderClient({
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                 padding: 8,
                 zIndex: 10,
+                minWidth: 140,
               }}
             >
               <Link href="/management/dashboard/settings">
                 <div style={{ padding: 8 }}>設定</div>
               </Link>
+
               <form action={logout}>
                 <button
                   type="submit"
@@ -122,7 +127,7 @@ export default function ManagementHeaderClient({
                     textAlign: 'left',
                   }}
                 >
-                  ﾛｸﾞｱｳﾄ
+                  ログアウト
                 </button>
               </form>
             </div>

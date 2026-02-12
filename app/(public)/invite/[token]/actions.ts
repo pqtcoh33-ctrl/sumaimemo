@@ -1,55 +1,59 @@
 'use server'
 
+import { createSupabaseServer } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 
-export async function activateTenant(token: string, userId: string) {
-  const supabaseAdmin = createClient(
+export async function registerTenant(formData: FormData, inviteData: { id: string, property_id: string, unit_label: string, management_company_id: string }) {
+  const supabase = await createSupabaseServer()
+
+  const email = String(formData.get('email') ?? '').trim()
+  const password = String(formData.get('password') ?? '').trim()
+
+  if (!email || !password) {
+    throw new Error('入力内容が不足しています')
+  }
+
+  /* 1) ユーザー作成 */
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+  })
+
+  if (signUpError || !signUpData.user) {
+    throw new Error(signUpError?.message ?? '登録に失敗しました')
+  }
+
+  const userId = signUpData.user.id
+
+  /* 2) profiles 作成 */
+  const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  token = token.trim()
-  if (!token) throw new Error('token が渡されていません')
-  if (!userId) throw new Error('userId が渡されていません')
+  const { error: profileError } = await admin.from('profiles').upsert({
+    user_id: userId,
+    role: 'tenant',
+    property_id: inviteData.property_id,
+    unit_label: inviteData.unit_label,
+    management_company_id: inviteData.management_company_id,
+    email,
+  })
 
-  // 招待取得
-  const { data: invite, error: inviteError } = await supabaseAdmin
-    .from('tenant_invites')
-    .select('id, property_id, unit_label')
-    .eq('token', token)
-    .is('used_at', null)
-    .single()
+  if (profileError) throw new Error(profileError.message)
 
-  if (inviteError || !invite) {
-    throw new Error('無効または使用済みの招待です')
-  }
+  /* 3) 招待使用済みに */
+  const { error: inviteError } = await admin.from('tenant_invites').update({
+    tenant_user_id: userId,
+    used_at: new Date().toISOString(),
+  }).eq('id', inviteData.id)
 
-  // profiles を UPDATE（ここが重要）
-  const { error: profileError } = await supabaseAdmin
-    .from('profiles')
-    .update({
-      role: 'tenant',
-      property_id: invite.property_id,
-      unit_label: invite.unit_label,
-    })
-    .eq('user_id', userId)
+  if (inviteError) throw new Error(inviteError.message)
 
-  if (profileError) {
-    throw new Error(`profiles 更新失敗: ${profileError.message}`)
-  }
+  /* 4) ログイン */
+  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
 
-  // 招待を使用済みに
-  const { error: inviteUpdateError } = await supabaseAdmin
-    .from('tenant_invites')
-    .update({
-      tenant_user_id: userId,
-      used_at: new Date().toISOString(),
-    })
-    .eq('id', invite.id)
-
-  if (inviteUpdateError) {
-    throw new Error(inviteUpdateError.message)
-  }
+  if (signInError) throw new Error(signInError.message)
 
   return { ok: true }
 }
