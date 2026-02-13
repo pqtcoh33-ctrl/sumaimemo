@@ -1,12 +1,15 @@
 // app/api/management/inquiry/[id]/route.ts
+
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+
+export const dynamic = 'force-dynamic'
 
 // 日本語 enum
 const ALLOWED_STATUS = ['未対応', '保留', '対応済み'] as const
 type InquiryStatus = (typeof ALLOWED_STATUS)[number]
 
-// 🔴 追加：UUIDバリデーション（最小）
+// UUIDバリデーション
 const isValidUUID = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     value
@@ -26,7 +29,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // 🔴 追加：UUIDガード（ここだけ）
     if (!isValidUUID(params.id)) {
       return NextResponse.json(
         { message: 'invalid id' },
@@ -36,7 +38,8 @@ export async function GET(
 
     const admin = adminClient()
 
-    const { data, error } = await admin
+    // ① inquiry取得（tenant_idを必ず含める）
+    const { data: inquiry, error: inquiryError } = await admin
       .from('inquiries')
       .select(`
         id,
@@ -44,28 +47,46 @@ export async function GET(
         body,
         status,
         created_at,
+        tenant_id,
         properties (
           id,
           name
-        ),
-        profiles (
-          unit_label
         )
       `)
       .eq('id', params.id)
       .single()
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { message: 'Not found' },
-          { status: 404 }
-        )
-      }
-      throw error
+    if (inquiryError || !inquiry) {
+      return NextResponse.json(
+        { message: 'Not found' },
+        { status: 404 }
+      )
     }
 
-    return NextResponse.json(data)
+    // ② tenant(email)取得
+    const { data: tenant, error: tenantError } = await admin
+      .from('profiles')
+      .select('user_id, unit_label, email')
+      .eq('user_id', inquiry.tenant_id)
+      .single()
+
+    if (tenantError) {
+      console.error('Tenant fetch error:', tenantError)
+    }
+
+    // ③ 結合して返却（既存構造を維持）
+    const response = {
+      id: inquiry.id,
+      category: inquiry.category,
+      body: inquiry.body,
+      status: inquiry.status,
+      created_at: inquiry.created_at,
+      properties: inquiry.properties,
+      profiles: tenant ?? null,
+    }
+
+    return NextResponse.json(response)
+
   } catch (err: any) {
     console.error('Inquiry detail fetch error:', err)
     return NextResponse.json(
@@ -83,7 +104,6 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    // 🔴 追加：UUIDガード（GETと同じ）
     if (!isValidUUID(params.id)) {
       return NextResponse.json(
         { success: false, message: 'invalid id' },
