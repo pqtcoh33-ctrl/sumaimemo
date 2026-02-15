@@ -31,14 +31,14 @@ export default function ManagementHeaderClient({
         position: 'relative',
       }}
     >
-      {/* 左側：flexで残り幅を使う */}
+      {/* 左側 */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 12,
-          flex: 1,          // ★ 重要
-          minWidth: 0,      // ★ 省略を効かせるため必須
+          flex: 1,
+          minWidth: 0,
         }}
       >
         <Link href="/management/dashboard">
@@ -61,7 +61,7 @@ export default function ManagementHeaderClient({
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            flex: 1,          // ★ 残り幅のみ使う
+            flex: 1,
             minWidth: 0,
           }}
         >
@@ -81,7 +81,7 @@ export default function ManagementHeaderClient({
         </div>
       )}
 
-      {/* スマホ */}
+      {/* スマホ用 */}
       {isMobile && (
         <>
           <button
@@ -91,7 +91,7 @@ export default function ManagementHeaderClient({
               background: 'none',
               border: 'none',
               padding: 4,
-              flexShrink: 0, // ★ 押し出されない
+              flexShrink: 0,
             }}
           >
             ☰
@@ -100,36 +100,51 @@ export default function ManagementHeaderClient({
           {open && (
             <div
               style={{
-                position: 'absolute',
-                top: '100%',
-                right: 16,
-                background: '#fff',
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                padding: 8,
-                zIndex: 10,
-                minWidth: 140,
+                position: 'fixed',
+                inset: 0,
+                zIndex: 9999,
               }}
+              onClick={() => setOpen(false)}
             >
-              <Link href="/management/dashboard/settings">
-                <div style={{ padding: 8 }}>設定</div>
-              </Link>
-
-              <form action={logout}>
-                <button
-                  type="submit"
-                  style={{
-                    padding: 8,
-                    background: 'none',
-                    border: 'none',
-                    width: '100%',
-                    textAlign: 'left',
-                  }}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 56, // ヘッダー高さ（調整可）
+                  right: 16,
+                  background: '#fff',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: 8,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  padding: 8,
+                  minWidth: 140,
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Link
+                  href="/management/dashboard/settings"
+                  onClick={() => setOpen(false)}
                 >
-                  ログアウト
-                </button>
-              </form>
+                  <div style={{ padding: 8 }}>設定</div>
+                </Link>
+
+                <form
+                  action={logout}
+                  onSubmit={() => setOpen(false)}
+                >
+                  <button
+                    type="submit"
+                    style={{
+                      padding: 8,
+                      background: 'none',
+                      border: 'none',
+                      width: '100%',
+                      textAlign: 'left',
+                    }}
+                  >
+                    ログアウト
+                  </button>
+                </form>
+              </div>
             </div>
           )}
         </>

@@ -72,10 +72,16 @@ export default function InquiryClient({ inquiries }: Props) {
         </select>
 
         <input
-          type="date"
-          value={currentDate}
-          onChange={(e) => updateQuery('date', e.target.value)}
-        />
+  type="date"
+  value={currentDate}
+  onChange={(e) => updateQuery('date', e.target.value)}
+  style={{
+    padding: '6px 8px',
+    border: '1px solid #ccc',
+    borderRadius: 4,
+  }}
+/>
+
       </div>
 
       {/* ================= PC：テーブル ================= */}
