@@ -159,12 +159,14 @@ export default function ManagementHeaderClient({
                     handleLogout()
                   }}
                   style={{
-                    display: 'block',
-                    padding: 8,
-                    background: 'none',
-                    border: 'none',
-                    width: '100%',
-                    textAlign: 'left',
+                     display: 'block',
+    padding: 8,
+    width: '100%',
+    textAlign: 'left',
+    backgroundColor: '#ffffff',  // noneをやめる
+    border: '1px solid transparent', // noneをやめる
+    color: '#111827',
+    WebkitAppearance: 'none',   // ← 重要
                   }}
                 >
                   ログアウト
