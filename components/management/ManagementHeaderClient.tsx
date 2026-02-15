@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { logout } from '@/lib/auth/logout'
 
@@ -10,9 +10,6 @@ export default function ManagementHeaderClient({
   companyName: string
 }) {
   const [isMobile, setIsMobile] = useState(false)
-  const [open, setOpen] = useState(false)
-  const buttonRef = useRef<HTMLButtonElement | null>(null)
-  const [menuTop, setMenuTop] = useState(56)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640)
@@ -20,24 +17,6 @@ export default function ManagementHeaderClient({
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
-
-  useEffect(() => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
-      setMenuTop(rect.bottom)
-    }
-  }, [open])
-
-  useEffect(() => {
-    if (!open) return
-    const close = () => setOpen(false)
-    window.addEventListener('scroll', close)
-    window.addEventListener('resize', close)
-    return () => {
-      window.removeEventListener('scroll', close)
-      window.removeEventListener('resize', close)
-    }
-  }, [open])
 
   const handleLogout = async () => {
     try {
@@ -50,131 +29,142 @@ export default function ManagementHeaderClient({
   return (
     <header
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '12px 16px',
         background: '#ffffff',
         borderBottom: '1px solid #e5e7eb',
         position: 'relative',
         zIndex: 50,
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          flex: 1,
-          minWidth: 0,
-        }}
-      >
-        <Link href="/management/dashboard">
-          <img
-            src="/logo.png"
-            alt="アプリロゴ"
-            style={{ height: 32 }}
-          />
-        </Link>
+      {/* ===== モバイル表示 ===== */}
+      {isMobile && (
+        <div style={{ padding: '12px 16px' }}>
+          {/* 1段目：ロゴ＋会社名 */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              minWidth: 0,
+            }}
+          >
+            <Link href="/management/dashboard">
+              <img
+                src="/logo.png"
+                alt="アプリロゴ"
+                style={{ height: 32 }}
+              />
+            </Link>
 
-        <span
-          title={companyName}
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {companyName}
-        </span>
-      </div>
+            <span
+              title={companyName}
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              {companyName}
+            </span>
+          </div>
 
-      {/* PC表示 */}
-      {!isMobile && (
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Link href="/management/dashboard/settings">
-            <button>設定</button>
-          </Link>
+          {/* 2段目：右寄せボタン */}
+          <div
+            style={{
+              marginTop: 8,
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 8,
+            }}
+          >
+            <Link href="/management/dashboard/settings">
+              <button
+                style={{
+                  fontSize: 13,
+                  padding: '6px 12px',
+                  borderRadius: 6,
+                  border: '1px solid #d1d5db',
+                  backgroundColor: '#ffffff',
+                  color: '#374151',
+                  WebkitAppearance: 'none',
+                }}
+              >
+                設定
+              </button>
+            </Link>
 
-          <button onClick={handleLogout}>
-            ログアウト
-          </button>
+            <button
+              onClick={handleLogout}
+              style={{
+                fontSize: 13,
+                padding: '6px 12px',
+                borderRadius: 6,
+                border: '1px solid #d1d5db',
+                backgroundColor: '#ffffff',
+                color: '#374151',
+                WebkitAppearance: 'none',
+              }}
+            >
+              ログアウト
+            </button>
+          </div>
         </div>
       )}
 
-      {/* モバイル表示 */}
-      {isMobile && (
-        <>
-          <button
-            ref={buttonRef}
-            onClick={() => setOpen((v) => !v)}
+      {/* ===== PC表示 ===== */}
+      {!isMobile && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 16px',
+          }}
+        >
+          <div
             style={{
-              fontSize: 22,
-              background: 'none',
-              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              flex: 1,
+              minWidth: 0,
             }}
           >
-            ☰
-          </button>
+            <Link href="/management/dashboard">
+              <img
+                src="/logo.png"
+                alt="アプリロゴ"
+                style={{ height: 32 }}
+              />
+            </Link>
 
-          {open && (
-            <div
+            <span
+              title={companyName}
               style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 9999,
+                fontSize: 14,
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
             >
-              <div
-                style={{ position: 'absolute', inset: 0 }}
-                onClick={() => setOpen(false)}
-              />
+              {companyName}
+            </span>
+          </div>
 
-              <div
-                style={{
-                  position: 'absolute',
-                  top: menuTop,
-                  right: 16,
-                  background: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: 8,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  padding: 12,
-                  minWidth: 160,
-                }}
-              >
-                <Link
-                  href="/management/dashboard/settings"
-                  onClick={() => setOpen(false)}
-                  style={{ display: 'block', padding: 8 }}
-                >
-                  設定
-                </Link>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Link href="/management/dashboard/settings">
+              <button>設定</button>
+            </Link>
 
-                <button
-                  onClick={() => {
-                    setOpen(false)
-                    handleLogout()
-                  }}
-                  style={{
-                     display: 'block',
-    padding: 8,
-    width: '100%',
-    textAlign: 'left',
-    backgroundColor: '#ffffff',  // noneをやめる
-    border: '1px solid transparent', // noneをやめる
-    color: '#111827',
-    WebkitAppearance: 'none',   // ← 重要
-                  }}
-                >
-                  ログアウト
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+            <button onClick={handleLogout}>
+              ログアウト
+            </button>
+          </div>
+        </div>
       )}
     </header>
   )
