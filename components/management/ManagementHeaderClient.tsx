@@ -39,6 +39,14 @@ export default function ManagementHeaderClient({
     }
   }, [open])
 
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (e) {
+      console.error('ログアウトエラー', e)
+    }
+  }
+
   return (
     <header
       style={{
@@ -83,17 +91,20 @@ export default function ManagementHeaderClient({
         </span>
       </div>
 
+      {/* PC表示 */}
       {!isMobile && (
         <div style={{ display: 'flex', gap: 8 }}>
           <Link href="/management/dashboard/settings">
             <button>設定</button>
           </Link>
-          <form action={logout}>
-            <button type="submit">ログアウト</button>
-          </form>
+
+          <button onClick={handleLogout}>
+            ログアウト
+          </button>
         </div>
       )}
 
+      {/* モバイル表示 */}
       {isMobile && (
         <>
           <button
@@ -142,24 +153,22 @@ export default function ManagementHeaderClient({
                   設定
                 </Link>
 
-                <form
-                  action={logout}
-                  onSubmit={() => setOpen(false)}
+                <button
+                  onClick={() => {
+                    setOpen(false)
+                    handleLogout()
+                  }}
+                  style={{
+                    display: 'block',
+                    padding: 8,
+                    background: 'none',
+                    border: 'none',
+                    width: '100%',
+                    textAlign: 'left',
+                  }}
                 >
-                  <button
-                    type="submit"
-                    style={{
-                      display: 'block',
-                      padding: 8,
-                      background: 'none',
-                      border: 'none',
-                      width: '100%',
-                      textAlign: 'left',
-                    }}
-                  >
-                    ログアウト
-                  </button>
-                </form>
+                  ログアウト
+                </button>
               </div>
             </div>
           )}
