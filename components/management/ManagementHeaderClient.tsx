@@ -12,12 +12,30 @@ export default function ManagementHeaderClient({
   const [isMobile, setIsMobile] = useState(false)
   const [open, setOpen] = useState(false)
 
+  // モバイル判定
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640)
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  // メニュー自動クローズ（スクロール・タップ・リサイズ）
+  useEffect(() => {
+    if (!open) return
+
+    const close = () => setOpen(false)
+
+    window.addEventListener('scroll', close)
+    window.addEventListener('resize', close)
+    
+
+    return () => {
+      window.removeEventListener('scroll', close)
+      window.removeEventListener('resize', close)
+     
+    }
+  }, [open])
 
   return (
     <header
@@ -29,6 +47,7 @@ export default function ManagementHeaderClient({
         background: '#ffffff',
         borderBottom: '1px solid #e5e7eb',
         position: 'relative',
+        zIndex: 50,
       }}
     >
       {/* 左側 */}
@@ -104,27 +123,39 @@ export default function ManagementHeaderClient({
                 inset: 0,
                 zIndex: 9999,
               }}
-              onClick={() => setOpen(false)}
             >
+              {/* 背景クリックで閉じる */}
               <div
                 style={{
                   position: 'absolute',
-                  top: 56, // ヘッダー高さ（調整可）
+                  inset: 0,
+                }}
+                onClick={() => setOpen(false)}
+              />
+
+              {/* メニュー本体 */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 56,
                   right: 16,
                   background: '#fff',
                   border: '1px solid #e5e7eb',
                   borderRadius: 8,
                   boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  padding: 8,
-                  minWidth: 140,
+                  padding: 12,
+                  minWidth: 160,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
                 }}
-                onClick={(e) => e.stopPropagation()}
               >
                 <Link
                   href="/management/dashboard/settings"
                   onClick={() => setOpen(false)}
+                  style={{ padding: 8 }}
                 >
-                  <div style={{ padding: 8 }}>設定</div>
+                  設定
                 </Link>
 
                 <form
