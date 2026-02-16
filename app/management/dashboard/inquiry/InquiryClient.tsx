@@ -23,11 +23,10 @@ export default function InquiryClient({ inquiries }: Props) {
   const searchParams = useSearchParams()
   const [isMobile, setIsMobile] = useState(false)
 
-  // ★ 物件IDを現在のURLから取得
   const propertyId = searchParams.get('property') ?? ''
-
   const currentStatus = searchParams.get('status') ?? ''
-  const currentDate = searchParams.get('date') ?? ''
+  const currentRange = searchParams.get('range') ?? '' // ← ここだけ変更
+  const currentCategory = searchParams.get('category') ?? ''
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640)
@@ -42,56 +41,98 @@ export default function InquiryClient({ inquiries }: Props) {
     router.push(`?${params.toString()}`)
   }
 
-  if (!inquiries || inquiries.length === 0) {
-    return <p>問い合わせはまだありません。</p>
-  }
-
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: 16 }}>
       <DashboardBackLink />
 
-      <h1 style={{ marginBottom: 12 }}>問い合わせ一覧</h1>
+      <h1 style={{ marginBottom: 20 }}>問い合わせ一覧</h1>
 
-      {/* ===== 検索 ===== */}
+      {/* ===== 検索エリア ===== */}
       <div
         style={{
           display: 'flex',
-          gap: 8,
-          flexWrap: 'wrap',
-          marginBottom: 16,
+          flexDirection: 'column',
+          gap: 16,
+          marginBottom: 24,
+          padding: 16,
+          border: '1px solid #e5e7eb',
+          borderRadius: 8,
+          background: '#f9fafb',
         }}
       >
-        <select
-          value={currentStatus}
-          onChange={(e) => updateQuery('status', e.target.value)}
-        >
-          <option value="">すべてのステータス</option>
-          <option value="未対応">未対応</option>
-          <option value="保留">保留</option>
-          <option value="対応済み">対応済み</option>
-        </select>
-
-        <input
-  type="date"
-  value={currentDate}
-  onChange={(e) => updateQuery('date', e.target.value)}
-  style={{
-    padding: '6px 8px',
-    border: '1px solid #ccc',
-    borderRadius: 4,
-  }}
-/>
-
-      </div>
-
-      {/* ================= PC：テーブル ================= */}
-      {!isMobile && (
-        <table
+        {/* ステータス + カテゴリー 横並び */}
+        <div
           style={{
-            width: '100%',
-            borderCollapse: 'collapse',
+            display: 'flex',
+            gap: 12,
+            flexWrap: 'nowrap',
           }}
         >
+          <select
+            value={currentStatus}
+            onChange={(e) => updateQuery('status', e.target.value)}
+            style={{
+              padding: 8,
+              minWidth: 160,
+            }}
+          >
+            <option value="">すべてのステータス</option>
+            <option value="未対応">未対応</option>
+            <option value="保留">保留</option>
+            <option value="対応済み">対応済み</option>
+          </select>
+
+          <select
+            value={currentCategory}
+            onChange={(e) => updateQuery('category', e.target.value)}
+            style={{
+              padding: 8,
+              minWidth: 160,
+            }}
+          >
+            <option value="">すべてのカテゴリー</option>
+            <option value="設備関連">設備関連</option>
+            <option value="苦情・トラブル">苦情・トラブル</option>
+            <option value="騒音">騒音</option>
+            <option value="清掃">清掃</option>
+            <option value="駐車・駐輪場">駐車・駐輪場</option>
+            <option value="家賃関連">家賃関連</option>
+            <option value="退去連絡">退去連絡</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        {/* クイック期間 */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {[
+            { label: '今日', value: 'today' },
+            { label: '7日間', value: '7days' },
+            { label: '30日間', value: '30days' },
+            { label: '全期間', value: 'all' },
+          ].map((b) => (
+            <button
+              key={b.value}
+              onClick={() => updateQuery('range', b.value)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 20,
+                border: '1px solid #d1d5db',
+                background:
+                  currentRange === b.value ? '#111827' : '#ffffff',
+                color:
+                  currentRange === b.value ? '#ffffff' : '#111827',
+                cursor: 'pointer',
+              }}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== 表示部分（変更なし） ===== */}
+      {!isMobile ? (
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <th align="left">部屋</th>
@@ -123,10 +164,7 @@ export default function InquiryClient({ inquiries }: Props) {
             ))}
           </tbody>
         </table>
-      )}
-
-      {/* ================= スマホ：カード ================= */}
-      {isMobile && (
+      ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {inquiries.map((r) => (
             <div
