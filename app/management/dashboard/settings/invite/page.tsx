@@ -19,11 +19,11 @@ export default async function InvitePage() {
   const initialToken = null
 
   return (
-    <div style={{ maxWidth: 720, padding: 16 }}>
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: 16, fontFamily: 'sans-serif' }}>
       <DashboardBackLink />
-      <h1>入居者招待</h1>
 
-      <p style={{ color: '#666' }}>
+      <h1 style={{ fontSize: 28, marginBottom: 8 }}>入居者招待</h1>
+      <p style={{ color: '#666', marginBottom: 24 }}>
         物件と部屋番号を指定して、入居者用の招待リンクを作成します。
       </p>
 

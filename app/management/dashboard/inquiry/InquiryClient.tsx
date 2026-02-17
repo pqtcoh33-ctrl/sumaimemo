@@ -25,7 +25,7 @@ export default function InquiryClient({ inquiries }: Props) {
 
   const propertyId = searchParams.get('property') ?? ''
   const currentStatus = searchParams.get('status') ?? ''
-  const currentRange = searchParams.get('range') ?? '' // ← ここだけ変更
+  const currentRange = searchParams.get('range') ?? 'all' // ← ここだけ変更
   const currentCategory = searchParams.get('category') ?? ''
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function InquiryClient({ inquiries }: Props) {
           style={{
             display: 'flex',
             gap: 12,
-            flexWrap: 'nowrap',
+            flexDirection: isMobile ? 'column' : 'row',
           }}
         >
           <select
@@ -73,7 +73,7 @@ export default function InquiryClient({ inquiries }: Props) {
             onChange={(e) => updateQuery('status', e.target.value)}
             style={{
               padding: 8,
-              minWidth: 160,
+              minWidth: isMobile ? '100%' : 160,
             }}
           >
             <option value="">すべてのステータス</option>
@@ -87,7 +87,7 @@ export default function InquiryClient({ inquiries }: Props) {
             onChange={(e) => updateQuery('category', e.target.value)}
             style={{
               padding: 8,
-              minWidth: 160,
+              minWidth: isMobile ? '100%' : 160,
             }}
           >
             <option value="">すべてのカテゴリー</option>
