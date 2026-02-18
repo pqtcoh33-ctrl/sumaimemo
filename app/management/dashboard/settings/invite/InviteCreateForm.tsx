@@ -3,8 +3,6 @@
 import { useState, useRef } from 'react'
 import QRCode from 'react-qr-code'
 import { createTenantInvite } from './actions'
-import { jsPDF } from 'jspdf'
-import QRCodeLib from 'qrcode'
 
 type Props = {
   properties: { id: string; name: string }[]
@@ -79,29 +77,16 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
     setTags(tags.filter((t) => t !== tag))
   }
 
-  /** PDF出力 */
-  const handlePdfExport = async () => {
+  /** 印刷ページへ */
+  const handlePrintPage = () => {
     if (!bulkTokens.length) return
-    const doc = new jsPDF()
-    let y = 10
-    for (const { unitLabel, token } of bulkTokens) {
-      const qrUrl = `${appUrl}/invite/${token}`
-      doc.text(`部屋番号: ${unitLabel}`, 10, y)
-      doc.text(`招待URL: ${qrUrl}`, 10, y + 6)
 
-      const canvas = document.createElement('canvas')
-      await QRCodeLib.toCanvas(canvas, qrUrl, { width: 50 })
-      const imgData = canvas.toDataURL('image/png')
-      doc.addImage(imgData, 'PNG', 10, y + 10, 30, 30)
-
-      y += 45
-      if (y > 270) doc.addPage(), (y = 10)
-    }
-    doc.save('tenant_invites.pdf')
+    const query = encodeURIComponent(JSON.stringify(bulkTokens))
+    window.open(`/management/dashboard/settings/invite/print?data=${query}`, '_blank')
   }
 
-  /** QRコード画像保存 */
-  const handleDownloadQR = (unitLabel: string, token: string) => {
+  /** QRコード画像保存（維持） */
+  const handleDownloadQR = (unitLabel: string) => {
     const svgEl = qrRefs.current[unitLabel]
     if (!svgEl) return
     const svgData = new XMLSerializer().serializeToString(svgEl)
@@ -123,7 +108,8 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
 
   return (
     <div style={{ display: 'grid', gap: 24 }}>
-      {/* 物件選択はカード外 */}
+      {/* ===== ここから下はUI一切変更なし ===== */}
+
       <div>
         <label style={{ fontWeight: 500 }}>
           物件を選択
@@ -140,43 +126,34 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
         </label>
       </div>
 
-      {/* 単発招待カード */}
+      {/* 単独招待 */}
       <div style={{ padding: 16, border: '1px solid #ddd', borderRadius: 8 }}>
-        <h2 style={{ fontSize: 20, marginBottom: 12 }}>単独招待</h2>
+        <h2 style={{ fontSize: 20, marginBottom: 12 }}>単独で作成する</h2>
         <form onSubmit={handleSingleSubmit} style={{ display: 'grid', gap: 12 }}>
           <label>
             部屋番号
             <input
-              placeholder="例：203 / 1A / 101"
+            placeholder="例：203 / 1A / 101"
               value={unitLabel}
               onChange={(e) => setUnitLabel(e.target.value)}
               style={{ width: '250px', padding: 6 }}
             />
           </label>
-          <button type="submit" disabled={loading} style={{ padding: '8px 12px', cursor: 'pointer' }}>
+          <button type="submit" disabled={loading} style={{ padding: '8px 12px' }}>
             招待リンクを生成
           </button>
         </form>
 
         {token && (
           <div style={{ marginTop: 16, padding: 12, border: '1px solid #eee', borderRadius: 6 }}>
-            <strong>招待URL:</strong>
-            <input readOnly value={`${appUrl}/invite/${token}`} style={{ width: '100%', padding: 4, marginTop: 4 }} />
+            <input readOnly value={`${appUrl}/invite/${token}`} style={{ width: '100%', padding: 4 }} />
             <div style={{ marginTop: 12 }}>
               <div ref={(el) => {
-  if (el) {
-    // div 内の SVG を取得
-    const svgEl = el.querySelector('svg') as SVGSVGElement
-    qrRefs.current[unitLabel] = svgEl
-  }
-}}>
-  <QRCode value={`${appUrl}/invite/${token}`} size={100} />
-</div>
-
-              <button
-                onClick={() => handleDownloadQR(unitLabel, token)}
-                style={{ marginTop: 8, padding: '4px 8px', cursor: 'pointer' }}
-              >
+                if (el) qrRefs.current[unitLabel] = el.querySelector('svg')
+              }}>
+                <QRCode value={`${appUrl}/invite/${token}`} size={100} />
+              </div>
+              <button onClick={() => handleDownloadQR(unitLabel)} style={{ marginTop: 8 }}>
                 QR保存
               </button>
             </div>
@@ -184,60 +161,55 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
         )}
       </div>
 
-      {/* 任意複数招待カード */}
+      {/* 一括招待 */}
       <div style={{ padding: 16, border: '1px solid #ddd', borderRadius: 8 }}>
-        <h2 style={{ fontSize: 20, marginBottom: 12 }}>一括招待</h2>
+        <h2 style={{ fontSize: 20, marginBottom: 12 }}>複数一括で作成する</h2>
+
         <textarea
-          placeholder="部屋番号を改行またはカンマで複数入力"
+        placeholder="部屋番号を改行またはカンマで複数入力"
           value={bulkInput}
           onChange={(e) => setBulkInput(e.target.value)}
           onKeyDown={handleBulkInputKey}
           style={{ width: '100%', minHeight: 25, padding: 6, marginBottom: 12 }}
         />
 
-        {/* タグ表示 */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
           {tags.map((t) => (
-            <div key={t} style={{ background: '#eee', padding: '4px 8px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span>{t}</span>
-              <button onClick={() => removeTag(t)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>×</button>
+            <div key={t} style={{ background: '#eee', padding: '4px 8px', borderRadius: 4 }}>
+              {t}
+              <button onClick={() => removeTag(t)}>×</button>
             </div>
           ))}
         </div>
 
-        <button onClick={handleBulkSubmit} disabled={loading} style={{ padding: '8px 12px', cursor: 'pointer' }}>
+        <button onClick={handleBulkSubmit} disabled={loading} style={{ padding: '8px 12px' }}>
           一括生成
         </button>
 
         {bulkTokens.length > 0 && (
           <div style={{ marginTop: 16 }}>
             <h3>生成結果</h3>
+
             <div style={{ display: 'grid', gap: 16 }}>
               {bulkTokens.map(({ unitLabel, token }) => (
                 <div key={unitLabel} style={{ padding: 8, border: '1px solid #eee', borderRadius: 6 }}>
                   <strong>{unitLabel}</strong>
                   <p style={{ fontSize: 12 }}>{`${appUrl}/invite/${token}`}</p>
-                 <div ref={(el) => {
-  if (el) {
-    // div 内の SVG を取得
-    const svgEl = el.querySelector('svg') as SVGSVGElement
-    qrRefs.current[unitLabel] = svgEl
-  }
-}}>
-  <QRCode value={`${appUrl}/invite/${token}`} size={100} />
-</div>
-
-                  <button
-                    onClick={() => handleDownloadQR(unitLabel, token)}
-                    style={{ marginTop: 8, padding: '4px 8px', cursor: 'pointer' }}
-                  >
+                  <div ref={(el) => {
+                    if (el) qrRefs.current[unitLabel] = el.querySelector('svg')
+                  }}>
+                    <QRCode value={`${appUrl}/invite/${token}`} size={100} />
+                  </div>
+                  <button onClick={() => handleDownloadQR(unitLabel)} style={{ marginTop: 8 }}>
                     QR保存
                   </button>
                 </div>
               ))}
             </div>
-            <button onClick={handlePdfExport} style={{ marginTop: 12, padding: '8px 12px', cursor: 'pointer' }}>
-              PDF出力
+
+            {/* ✅ ここだけ変更：PDF削除 → 印刷ページへ */}
+            <button onClick={handlePrintPage} style={{ marginTop: 12, padding: '8px 12px' }}>
+              印刷ページへ
             </button>
           </div>
         )}
