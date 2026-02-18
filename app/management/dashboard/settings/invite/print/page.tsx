@@ -12,6 +12,7 @@ type BulkToken = {
 export default function InvitePrintTemplatePage() {
   const searchParams = useSearchParams()
   const data = searchParams.get('data')
+  const propertyNameParam = searchParams.get('propertyName') ?? '' // 追加：物件名取得
 
   const tokens: BulkToken[] = useMemo(() => {
     if (!data) return []
@@ -22,7 +23,7 @@ export default function InvitePrintTemplatePage() {
     }
   }, [data])
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://www.sumaimemo.jp'
 
   // ✅ テンプレート編集状態
   const [companyName, setCompanyName] = useState('〇〇管理 株式会社')
@@ -33,36 +34,39 @@ export default function InvitePrintTemplatePage() {
     'ご不明な点等ございましたら、管理会社までお問合せください。'
   )
 
+  // URLパラメータから物件名を反映
+  const [propertyName] = useState(propertyNameParam)
+
   return (
     <>
       <style>{`
         @media print {
-
-          /* アプリ共通ヘッダーを消す（必要ならクラス名調整） */
+          /* アプリ共通ヘッダーを消す */
           header {
             display: none !important;
           }
-
           /* 編集UIは印刷しない */
           .edit-area {
             display: none !important;
           }
-
           body {
             margin: 0;
           }
-
           .print-page {
             page-break-after: always;
           }
         }
       `}</style>
 
-      <div style={{ padding: 24, display: 'grid', gap: 32,
-        maxWidth: 900,        // ← 幅制限
-    　　margin: '0 auto',     // ← 中央寄せ
-       }}>
-
+      <div
+        style={{
+          padding: 24,
+          display: 'grid',
+          gap: 32,
+          maxWidth: 900,
+          margin: '0 auto',
+        }}
+      >
         {/* ===== 編集エリア（画面表示のみ） ===== */}
         <div
           className="edit-area"
@@ -134,15 +138,24 @@ export default function InvitePrintTemplatePage() {
                 }}
               >
                 <div>
-                  <h2 style={{ whiteSpace: 'pre-wrap',marginBottom: 16 }}>
+                  <h2 style={{ whiteSpace: 'pre-wrap', marginBottom: 8 }}>
                     {companyName}
                   </h2>
 
-                  <p style={{ whiteSpace: 'pre-wrap',marginBottom: 24 }}>
+                  
+
+                  <p style={{ whiteSpace: 'pre-wrap', marginBottom: 24 }}>
                     {message}
                   </p>
 
-                  <p style={{ marginBottom: 16 }}>
+                  {/* 追加：物件名表示 */}
+                  {propertyName && (
+                    <p style={{ fontWeight: 500, marginBottom: 16 }}>
+                      物件名：{propertyName}
+                    </p>
+                  )}
+
+                  <p style={{ fontWeight: 500, marginBottom: 16 }}>
                     部屋番号：{unitLabel}
                   </p>
 
@@ -168,7 +181,7 @@ export default function InvitePrintTemplatePage() {
                   </p>
                 </div>
 
-                <div style={{ whiteSpace: 'pre-wrap',fontSize: 16 }}>
+                <div style={{ whiteSpace: 'pre-wrap', fontSize: 16 }}>
                   {footer}
                 </div>
               </div>

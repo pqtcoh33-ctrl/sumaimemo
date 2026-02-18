@@ -14,6 +14,9 @@ type BulkToken = { unitLabel: string; token: string }
 
 export default function InviteCreateForm({ properties, defaultProperty, initialToken }: Props) {
   const [propertyId, setPropertyId] = useState(defaultProperty || '')
+  const [propertyName, setPropertyName] = useState(
+    properties.find(p => p.id === defaultProperty)?.name || ''
+  )
   const [unitLabel, setUnitLabel] = useState('')
   const [bulkInput, setBulkInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
@@ -21,7 +24,7 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
   const [bulkTokens, setBulkTokens] = useState<BulkToken[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://www.sumaimemo.jp'
   const qrRefs = useRef<Record<string, SVGSVGElement | null>>({})
 
   /** 単発生成 */
@@ -80,12 +83,15 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
   /** 印刷ページへ */
   const handlePrintPage = () => {
     if (!bulkTokens.length) return
-
-    const query = encodeURIComponent(JSON.stringify(bulkTokens))
-    window.open(`/management/dashboard/settings/invite/print?data=${query}`, '_blank')
+    const data = encodeURIComponent(JSON.stringify(bulkTokens))
+    const property = encodeURIComponent(propertyName)
+    window.open(
+      `/management/dashboard/settings/invite/print?data=${data}&propertyName=${property}`,
+      '_blank'
+    )
   }
 
-  /** QRコード画像保存（維持） */
+  /** QRコード画像保存 */
   const handleDownloadQR = (unitLabel: string) => {
     const svgEl = qrRefs.current[unitLabel]
     if (!svgEl) return
@@ -108,14 +114,17 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
 
   return (
     <div style={{ display: 'grid', gap: 24 }}>
-      {/* ===== ここから下はUI一切変更なし ===== */}
-
+      {/* 物件選択 */}
       <div>
         <label style={{ fontWeight: 500 }}>
           物件を選択
           <select
             value={propertyId}
-            onChange={(e) => setPropertyId(e.target.value)}
+            onChange={(e) => {
+              setPropertyId(e.target.value)
+              const name = properties.find(p => p.id === e.target.value)?.name || ''
+              setPropertyName(name)
+            }}
             style={{ width: '250px', padding: 6, marginTop: 4 }}
           >
             <option value="">物件を選択してください</option>
@@ -133,7 +142,7 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
           <label>
             部屋番号
             <input
-            placeholder="例：203 / 1A / 101"
+              placeholder="例：203 / 1A / 101"
               value={unitLabel}
               onChange={(e) => setUnitLabel(e.target.value)}
               style={{ width: '250px', padding: 6 }}
@@ -146,7 +155,8 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
 
         {token && (
           <div style={{ marginTop: 16, padding: 12, border: '1px solid #eee', borderRadius: 6 }}>
-            <input readOnly value={`${appUrl}/invite/${token}`} style={{ width: '100%', padding: 4 }} />
+            <strong>{propertyName} / {unitLabel}</strong>
+            <input readOnly value={`${appUrl}/invite/${token}`} style={{ width: '100%', padding: 4, marginTop: 4 }} />
             <div style={{ marginTop: 12 }}>
               <div ref={(el) => {
                 if (el) qrRefs.current[unitLabel] = el.querySelector('svg')
@@ -166,7 +176,7 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
         <h2 style={{ fontSize: 20, marginBottom: 12 }}>複数一括で作成する</h2>
 
         <textarea
-        placeholder="部屋番号を改行またはカンマで複数入力"
+          placeholder="部屋番号を改行またはカンマで複数入力"
           value={bulkInput}
           onChange={(e) => setBulkInput(e.target.value)}
           onKeyDown={handleBulkInputKey}
@@ -193,7 +203,7 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
             <div style={{ display: 'grid', gap: 16 }}>
               {bulkTokens.map(({ unitLabel, token }) => (
                 <div key={unitLabel} style={{ padding: 8, border: '1px solid #eee', borderRadius: 6 }}>
-                  <strong>{unitLabel}</strong>
+                  <strong>{propertyName} / {unitLabel}</strong>
                   <p style={{ fontSize: 12 }}>{`${appUrl}/invite/${token}`}</p>
                   <div ref={(el) => {
                     if (el) qrRefs.current[unitLabel] = el.querySelector('svg')
@@ -207,7 +217,7 @@ export default function InviteCreateForm({ properties, defaultProperty, initialT
               ))}
             </div>
 
-            {/* ✅ ここだけ変更：PDF削除 → 印刷ページへ */}
+            {/* 印刷ページへ */}
             <button onClick={handlePrintPage} style={{ marginTop: 12, padding: '8px 12px' }}>
               印刷ページへ
             </button>
