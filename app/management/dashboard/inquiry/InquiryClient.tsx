@@ -132,39 +132,52 @@ export default function InquiryClient({ inquiries }: Props) {
 
       {/* ===== 表示部分（変更なし） ===== */}
       {!isMobile ? (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th align="left">部屋</th>
-              <th align="left">カテゴリー</th>
-              <th align="left">本文</th>
-              <th align="center">ステータス</th>
-              <th align="center">作成日</th>
-              <th align="center">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inquiries.map((r) => (
-              <tr key={r.id}>
-                <td>{r.unit_label ?? '—'}</td>
-                <td>{r.category ?? '—'}</td>
-                <td>{r.body}</td>
-                <td align="center">{r.status}</td>
-                <td align="center">
-                  {new Date(r.created_at).toLocaleDateString()}
-                </td>
-                <td align="center">
-                  <Link
-                    href={`/management/dashboard/inquiry/${r.id}?property=${propertyId}`}
-                  >
-                    編集
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
+  <table
+    style={{
+      width: '100%',
+      borderCollapse: 'collapse',
+      tableLayout: 'fixed',   // ← これ追加
+    }}
+  >
+    <thead>
+      <tr>
+        <th style={{ width: '12%' }} align="left">部屋</th>
+        <th style={{ width: '15%' }} align="left">カテゴリー</th>
+        <th style={{ width: '38%' }} align="left">本文</th>
+        <th style={{ width: '10%' }} align="center">ステータス</th>
+        <th style={{ width: '15%' }} align="center">作成日</th>
+        <th style={{ width: '10%' }} align="center">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {inquiries.map((r) => (
+        <tr key={r.id}>
+          <td>{r.unit_label ?? '—'}</td>
+          <td>{r.category ?? '—'}</td>
+          <td
+            style={{
+              wordBreak: 'break-word',   // ← 長文対策
+              overflowWrap: 'break-word',
+            }}
+          >
+            {r.body}
+          </td>
+          <td align="center">{r.status}</td>
+          <td align="center">
+            {new Date(r.created_at).toLocaleDateString()}
+          </td>
+          <td align="center">
+            <Link
+              href={`/management/dashboard/inquiry/${r.id}?property=${propertyId}`}
+            >
+              編集
+            </Link>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {inquiries.map((r) => (
             <div
